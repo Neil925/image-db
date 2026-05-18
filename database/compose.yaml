@@ -1,11 +1,13 @@
+
+name: mysql
 services:
   db:
-    image: mariadb
+    image: mysql
     restart: always
-    environment:
-      MARIADB_ROOT_PASSWORD: root
-  adminer:
-    image: adminer
-    restart: always
+    volumes:
+      - ./database-scripts:/database-scripts
     ports:
-      - 8080:8080
+      - 3306:3306
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+

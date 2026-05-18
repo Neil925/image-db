@@ -1,8 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
   provider = "prisma-client"
   output   = "../generated/prisma"
@@ -10,4 +5,45 @@ generator client {
 
 datasource db {
   provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model image {
+  id           Int        @id @default(autoincrement())
+  uploadedBy   String?    @db.Char(36)
+  filename     String?    @db.Char(36)
+  extension    String?    @db.VarChar(5)
+  dateOfUpload DateTime?  @default(now()) @db.DateTime(0)
+  users        users?     @relation(fields: [uploadedBy], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "fk_uploadedBy")
+  imageTag     imageTag[]
+
+  @@index([uploadedBy], map: "fk_uploadedBy")
+}
+
+model imageTag {
+  id      Int    @id @default(autoincrement())
+  imageId Int?
+  tagId   Int?
+  image   image? @relation(fields: [imageId], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "fk_imageId")
+  tag     tag?   @relation(fields: [tagId], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "fk_tagId")
+
+  @@index([imageId], map: "fk_imageId")
+  @@index([tagId], map: "fk_tagId")
+}
+
+model tag {
+  id          Int        @id @default(autoincrement())
+  tagName     String?    @db.VarChar(255)
+  tagType     Int?
+  dateCreated DateTime?  @default(now()) @db.DateTime(0)
+  imageTag    imageTag[]
+}
+
+model users {
+  id          String    @id @db.Char(36)
+  username    String?   @unique(map: "username") @db.VarChar(255)
+  displayName String?   @db.VarChar(255)
+  roleId      Int?
+  createdDate DateTime? @default(now()) @db.DateTime(0)
+  image       image[]
 }
